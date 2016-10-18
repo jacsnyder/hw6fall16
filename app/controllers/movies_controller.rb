@@ -1,7 +1,7 @@
 class MoviesController < ApplicationController
 
   def movie_params
-    params.require(:movie).permit(:title, :rating, :description, :release_date)
+    params.require(:movie).permit(:title, :rating, :description, :release_date, :search_terms)
   end
 
   def show
@@ -62,7 +62,29 @@ class MoviesController < ApplicationController
   end
   
   def search_tmdb
-    @movies=Movie.find_in_tmdb(params[:search_terms])
+    @search_terms = params[:search_terms]
+    if @search_terms.nil? || @search_terms.empty?
+      flash[:notice] = "Invalid search term"
+      redirect_to movies_path
+    else
+      @movies=Movie.find_in_tmdb(@search_terms)
+      if @movies.empty?
+        flash[:notice] = "No matching movies were found"
+        redirect_to movies_path
+      end
+    end
   end
-
+  
+  def add_tmdb
+    selected_movs = params[:tmdb_movies]
+    if selected_movs.nil? || selected_movs.empty?
+      flash[:notice] = "No movies selected"
+    else
+      selected_movs.keys.each do |mov_id|
+        Movie.create_from_tmdb(mov_id)
+      end
+      flash[:notice] = "Movies successfully to Rotten Potatoes"
+    end
+    redirect_to movies_path
+  end
 end

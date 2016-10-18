@@ -19,6 +19,12 @@ describe MoviesController do
       allow(Movie).to receive(:find_in_tmdb).and_return (fake_results)
       post :search_tmdb, {:search_terms => 'Ted'}
       expect(assigns(:movies)).to eq(fake_results)
-    end 
+    end
+    it 'should display a flash message \'Invalid search term\'' do
+      allow(Movie).to receive(:find_in_tmbd)
+      post :search_tmdb, {:search_terms => ''}
+      #expect(response).to redirect_to(movies_path)
+      expect(flash[:notice]).to match('Invalid search term')
+    end
   end
 end

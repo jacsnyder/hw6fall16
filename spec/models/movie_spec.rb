@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 
 describe Movie do
   describe 'searching Tmdb by keyword' do
@@ -5,6 +7,24 @@ describe Movie do
       it 'should call Tmdb with title keywords' do
         expect( Tmdb::Movie).to receive(:find).with('Inception')
         Movie.find_in_tmdb('Inception')
+      end
+      it 'should return an empty array if TMDB search does not yield any results' do
+        expect(Tmdb::Movie).to receive(:find).with('asdfasdfasdfasdf').and_return(nil)
+        search_result=Movie.find_in_tmdb('asdfasdfasdfasdf')
+        expect(search_result).to eq([])
+      end
+
+      it 'should return an array of hashes' do
+        
+        test_movie = [Tmdb::Movie.new({id: 1234, title: 'Inception', release_date: "2011-04-21"})]
+        expect(Tmdb::Movie).to receive(:find).with('Inception').and_return(test_movie)
+        allow(Movie).to receive(:get_rating).with(1234).and_return('G')
+        test_result = Movie.find_in_tmdb('Inception')[0]
+        
+        expect(test_result[:tmdb_id]).to eq(1234)
+        expect(test_result[:title]).to eq('Inception')
+        expect(test_result[:release_date]).to eq("2011-04-21")
+        expect(test_result[:rating]).to eq('G')
       end
     end
     context 'with invalid key' do
